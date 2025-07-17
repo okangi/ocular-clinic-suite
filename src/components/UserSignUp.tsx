@@ -32,12 +32,13 @@ export default function UserSignUp() {
         },
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
-        setLoading(false);
-        return;
-      }
-
+     if (signUpError) {
+      console.error(signUpError);
+      setError(signUpError.message);
+      setLoading(false);
+      return;
+    }
+     
       if (data?.user) {
         setSuccess(true);
       }
