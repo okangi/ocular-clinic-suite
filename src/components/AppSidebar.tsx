@@ -68,7 +68,7 @@ export function AppSidebar() {
     isActive ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" : "hover:bg-muted/50";
 
   return (
-    <Sidebar className={state === "collapsed" ? "w-14" : "w-64"} collapsible="icon">
+    <Sidebar className={state === "collapsed" ? "w-14" : "w-60 md:w-64"} collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-medium text-muted-foreground px-3 py-2">
@@ -83,11 +83,11 @@ export function AppSidebar() {
                       to={item.url} 
                       end 
                       className={({ isActive }) => 
-                        `flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 ${getNavCls({ isActive })}`
+                        `flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 rounded-md transition-all duration-200 ${getNavCls({ isActive })}`
                       }
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
-                      {state !== "collapsed" && <span className="truncate">{item.title}</span>}
+                      {state !== "collapsed" && <span className="text-sm truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -99,14 +99,14 @@ export function AppSidebar() {
       </SidebarContent>
       
       <SidebarFooter className="border-t border-border/50">
-        <div className="p-4 space-y-3">
-          {profile && (
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-primary/10">
-                <User className="h-4 w-4 text-primary" />
+        <div className="p-3 md:p-4 space-y-3">
+          {profile && state !== "collapsed" && (
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-1.5 md:p-2 rounded-full bg-primary/10 shrink-0">
+                <User className="h-3 w-3 md:h-4 md:w-4 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
+                <p className="text-xs md:text-sm font-medium text-foreground truncate">
                   {profile.first_name} {profile.last_name}
                 </p>
                 <div className="flex items-center gap-2">
@@ -124,10 +124,12 @@ export function AppSidebar() {
           <Button 
             variant="outline" 
             onClick={signOut}
-            className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+            className={`w-full justify-start gap-2 text-muted-foreground hover:text-foreground ${
+              state === "collapsed" ? "px-2" : ""
+            }`}
           >
-            <LogOut className="h-4 w-4" />
-            Sign Out
+            <LogOut className="h-3 w-3 md:h-4 md:w-4" />
+            {state !== "collapsed" && <span className="text-sm">Sign Out</span>}
           </Button>
         </div>
       </SidebarFooter>
