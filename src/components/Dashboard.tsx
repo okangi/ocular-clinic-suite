@@ -1,3 +1,6 @@
+import { useAuth } from "@/hooks/useAuth";
+import { RoleBasedDashboard } from "@/components/RoleBasedDashboard";
+import { OptometristActions } from "@/components/OptometristActions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +64,21 @@ const clinicTasks = [
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
+
+  // Show role-based dashboard for authenticated users
+  if (profile?.role === 'optometrist') {
+    return (
+      <div className="space-y-6">
+        <RoleBasedDashboard />
+        <OptometristActions />
+      </div>
+    );
+  }
+
+  if (profile && profile.role !== 'admin') {
+    return <RoleBasedDashboard />;
+  }
 
   const handleQuickAction = (path: string) => {
     navigate(path);

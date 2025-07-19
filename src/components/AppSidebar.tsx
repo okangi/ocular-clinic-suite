@@ -67,16 +67,36 @@ export function AppSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" : "hover:bg-muted/50";
 
+  // Filter navigation based on user role
+  const getFilteredNavigation = () => {
+    if (!profile) return navigationItems;
+    
+    const rolePermissions = {
+      admin: navigationItems, // Admin sees everything
+      optometrist: navigationItems.filter(item => 
+        !item.url.includes('/users') // Optometrists don't see user management
+      ),
+      technician: navigationItems.filter(item => 
+        ['/appointments', '/examinations', '/patients', '/inventory'].some(path => item.url.includes(path))
+      ),
+      receptionist: navigationItems.filter(item => 
+        ['/appointments', '/patients', '/prescriptions'].some(path => item.url.includes(path))
+      )
+    };
+    
+    return rolePermissions[profile.role] || navigationItems;
+  };
+
   return (
     <Sidebar className={state === "collapsed" ? "w-14" : "w-60 md:w-64"} collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-medium text-muted-foreground px-3 py-2">
-            Clinical Modules
+            {profile?.role === 'admin' ? 'All Modules' : 'Available Modules'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map((item) => (
+              {getFilteredNavigation().map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
@@ -109,14 +129,30 @@ export function AppSidebar() {
                 <p className="text-xs md:text-sm font-medium text-foreground truncate">
                   {profile.first_name} {profile.last_name}
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <Badge 
                     variant="secondary" 
                     className={`text-xs capitalize ${getRoleColor(profile.role)}`}
                   >
                     {profile.role}
                   </Badge>
+                  {profile.is_active && (
+                    <div className="h-2 w-2 bg-success rounded-full" title="Active" />
+                  )}
                 </div>
+                {profile.department && (
+                  <p className="text-xs text-muted-foreground truncate">
+                    {profile.department}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {profile && state === "collapsed" && (
+            <div className="flex justify-center">
+              <div className="p-2 rounded-full bg-primary/10">
+                <User className="h-4 w-4 text-primary" />
               </div>
             </div>
           )}
@@ -124,7 +160,7 @@ export function AppSidebar() {
           <Button 
             variant="outline" 
             onClick={signOut}
-            className={`w-full justify-start gap-2 text-muted-foreground hover:text-foreground ${
+            className={`w-full justify-start gap-2 text-muted-foreground hover:text-foreground transition-colors ${
               state === "collapsed" ? "px-2" : ""
             }`}
           >
