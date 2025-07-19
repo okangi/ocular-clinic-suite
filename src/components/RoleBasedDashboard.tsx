@@ -16,6 +16,7 @@ import {
   Users
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ReceptionistActions } from "./ReceptionistActions";
 
 // Mock data - in real app this would come from API
 const mockData = {
@@ -37,67 +38,149 @@ export function RoleBasedDashboard() {
 
   if (!profile) return null;
 
-  const role = profile.role;
+  const userRole = profile.role;
 
-  const QuickActions = () => {
-    const actions = {
-      optometrist: [
-        { icon: Eye, label: "Start Exam", action: () => navigate("/examinations"), color: "bg-primary/10 text-primary" },
-        { icon: FileText, label: "Write Prescription", action: () => navigate("/prescriptions"), color: "bg-accent/10 text-accent" },
-        { icon: Calendar, label: "View Schedule", action: () => navigate("/appointments"), color: "bg-success/10 text-success" },
-        { icon: User, label: "Patient Records", action: () => navigate("/patients"), color: "bg-warning/10 text-warning" }
-      ],
-      admin: [
-        { icon: Users, label: "Manage Users", action: () => navigate("/users"), color: "bg-primary/10 text-primary" },
-        { icon: Activity, label: "View Reports", action: () => navigate("/reports"), color: "bg-accent/10 text-accent" },
-        { icon: Calendar, label: "Clinic Schedule", action: () => navigate("/appointments"), color: "bg-success/10 text-success" },
-        { icon: FileText, label: "Analytics", action: () => navigate("/reports"), color: "bg-warning/10 text-warning" }
-      ],
-      technician: [
-        { icon: Stethoscope, label: "Equipment Check", action: () => navigate("/examinations"), color: "bg-primary/10 text-primary" },
-        { icon: Calendar, label: "Patient Prep", action: () => navigate("/appointments"), color: "bg-accent/10 text-accent" },
-        { icon: User, label: "Patient Records", action: () => navigate("/patients"), color: "bg-success/10 text-success" },
-        { icon: FileText, label: "Test Results", action: () => navigate("/examinations"), color: "bg-warning/10 text-warning" }
-      ],
-      receptionist: [
-        { icon: Calendar, label: "Book Appointment", action: () => navigate("/appointments"), color: "bg-primary/10 text-primary" },
-        { icon: User, label: "Patient Check-in", action: () => navigate("/patients"), color: "bg-accent/10 text-accent" },
-        { icon: CheckCircle, label: "Insurance Verify", action: () => navigate("/patients"), color: "bg-success/10 text-success" },
-        { icon: FileText, label: "Print Forms", action: () => navigate("/prescriptions"), color: "bg-warning/10 text-warning" }
-      ]
-    };
-
+  // If receptionist, show specialized interface
+  if (userRole === 'receptionist') {
     return (
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="text-lg">Quick Actions</CardTitle>
-          <CardDescription>
-            {role === 'optometrist' && "Start examinations and manage patient care"}
-            {role === 'admin' && "Manage clinic operations and staff"}
-            {role === 'technician' && "Prepare equipment and assist with procedures"}
-            {role === 'receptionist' && "Handle appointments and patient check-ins"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {actions[role]?.map((action, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                onClick={action.action}
-                className="h-20 flex-col gap-2 hover:shadow-md transition-all"
-              >
-                <div className={`p-2 rounded-lg ${action.color}`}>
-                  <action.icon className="h-5 w-5" />
-                </div>
-                <span className="text-xs font-medium">{action.label}</span>
-              </Button>
-            ))}
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
+              Welcome, {profile.first_name}
+            </h1>
+            <p className="text-muted-foreground">
+              Manage patient registration and appointments
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <Badge variant="secondary" className="text-sm capitalize px-3 py-1">
+            {userRole}
+          </Badge>
+        </div>
+        <ReceptionistActions />
+      </div>
     );
+  }
+
+  const getQuickActionsConfig = () => {
+    switch (userRole) {
+      case 'optometrist':
+        return {
+          title: "Start examinations and manage patient care",
+          actions: [
+            { icon: Eye, label: "Start Exam", action: () => navigate("/examinations"), color: "bg-primary/10 text-primary" },
+            { icon: FileText, label: "Write Prescription", action: () => navigate("/prescriptions"), color: "bg-accent/10 text-accent" },
+            { icon: Calendar, label: "View Schedule", action: () => navigate("/appointments"), color: "bg-success/10 text-success" },
+            { icon: User, label: "Patient Records", action: () => navigate("/patients"), color: "bg-warning/10 text-warning" }
+          ]
+        };
+      case 'admin':
+        return {
+          title: "Manage clinic operations and staff",
+          actions: [
+            { icon: Users, label: "Manage Users", action: () => navigate("/users"), color: "bg-primary/10 text-primary" },
+            { icon: Activity, label: "View Reports", action: () => navigate("/reports"), color: "bg-accent/10 text-accent" },
+            { icon: Calendar, label: "Clinic Schedule", action: () => navigate("/appointments"), color: "bg-success/10 text-success" },
+            { icon: FileText, label: "Analytics", action: () => navigate("/reports"), color: "bg-warning/10 text-warning" }
+          ]
+        };
+      case 'technician':
+        return {
+          title: "Prepare equipment and assist with procedures",
+          actions: [
+            { icon: Stethoscope, label: "Equipment Check", action: () => navigate("/examinations"), color: "bg-primary/10 text-primary" },
+            { icon: Calendar, label: "Patient Prep", action: () => navigate("/appointments"), color: "bg-accent/10 text-accent" },
+            { icon: User, label: "Patient Records", action: () => navigate("/patients"), color: "bg-success/10 text-success" },
+            { icon: FileText, label: "Test Results", action: () => navigate("/examinations"), color: "bg-warning/10 text-warning" }
+          ]
+        };
+      default:
+        return {
+          title: "General actions",
+          actions: []
+        };
+    }
   };
+
+  const getTodayScheduleTitle = () => {
+    switch (userRole) {
+      case 'optometrist': return "Your patient appointments";
+      case 'admin': return "Clinic overview";
+      case 'technician': return "Preparation schedule";
+      default: return "Schedule overview";
+    }
+  };
+
+  const getWelcomeMessage = () => {
+    switch (userRole) {
+      case 'optometrist': return "Ready to provide exceptional eye care";
+      case 'admin': return "Manage your clinic operations";
+      case 'technician': return "Support clinical excellence";
+      default: return "Welcome to the clinic system";
+    }
+  };
+
+  const getStatsConfig = () => {
+    switch (userRole) {
+      case 'optometrist':
+        return [
+          { label: 'Patients Today', value: '8', icon: Eye },
+          { label: 'Pending Results', value: '3', icon: Activity },
+          { label: 'Next Appointment', value: '10:00 AM', icon: Clock },
+          { label: 'Prescriptions', value: '4', icon: FileText }
+        ];
+      case 'admin':
+        return [
+          { label: 'Total Staff', value: '12', icon: Users },
+          { label: 'Revenue Today', value: '$2.4k', icon: Activity },
+          { label: 'Active Users', value: '8/12', icon: Clock },
+          { label: 'Efficiency Score', value: '92%', icon: FileText }
+        ];
+      case 'technician':
+        return [
+          { label: 'Equipment Ready', value: '95%', icon: Stethoscope },
+          { label: 'Tests Complete', value: '16', icon: Activity },
+          { label: 'Calibrations Due', value: '2', icon: Clock },
+          { label: 'Inventory Low', value: '3 items', icon: FileText }
+        ];
+      default:
+        return [
+          { label: 'General', value: '0', icon: Activity },
+          { label: 'Tasks', value: '0', icon: Activity },
+          { label: 'Status', value: 'OK', icon: Clock },
+          { label: 'Items', value: '0', icon: FileText }
+        ];
+    }
+  };
+
+  const quickActionsConfig = getQuickActionsConfig();
+  const statsConfig = getStatsConfig();
+
+  const QuickActions = () => (
+    <Card className="shadow-card">
+      <CardHeader>
+        <CardTitle className="text-lg">Quick Actions</CardTitle>
+        <CardDescription>{quickActionsConfig.title}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {quickActionsConfig.actions.map((action, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              onClick={action.action}
+              className="h-20 flex-col gap-2 hover:shadow-md transition-all"
+            >
+              <div className={`p-2 rounded-lg ${action.color}`}>
+                <action.icon className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-medium">{action.label}</span>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   const TodaySchedule = () => (
     <Card className="shadow-card">
@@ -106,12 +189,7 @@ export function RoleBasedDashboard() {
           <Calendar className="h-5 w-5 text-primary" />
           Today's Schedule
         </CardTitle>
-        <CardDescription>
-          {role === 'optometrist' && "Your patient appointments"}
-          {role === 'admin' && "Clinic overview"}
-          {role === 'technician' && "Preparation schedule"}
-          {role === 'receptionist' && "Front desk appointments"}
-        </CardDescription>
+        <CardDescription>{getTodayScheduleTitle()}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -196,15 +274,10 @@ export function RoleBasedDashboard() {
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
             Welcome, {profile.first_name}
           </h1>
-          <p className="text-muted-foreground">
-            {role === 'optometrist' && "Ready to provide exceptional eye care"}
-            {role === 'admin' && "Manage your clinic operations"}
-            {role === 'technician' && "Support clinical excellence"}
-            {role === 'receptionist' && "Ensure smooth patient experience"}
-          </p>
+          <p className="text-muted-foreground">{getWelcomeMessage()}</p>
         </div>
         <Badge variant="secondary" className="text-sm capitalize px-3 py-1">
-          {role}
+          {userRole}
         </Badge>
       </div>
 
@@ -219,88 +292,23 @@ export function RoleBasedDashboard() {
 
       {/* Role-specific quick stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="shadow-card">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  {role === 'optometrist' ? 'Patients Today' : 
-                   role === 'admin' ? 'Total Staff' :
-                   role === 'technician' ? 'Equipment Ready' : 'Check-ins'}
-                </p>
-                <p className="text-xl font-bold">
-                  {role === 'optometrist' ? '8' : 
-                   role === 'admin' ? '12' :
-                   role === 'technician' ? '95%' : '24'}
-                </p>
+        {statsConfig.map((stat, index) => (
+          <Card key={index} className="shadow-card">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
+                  <p className="text-xl font-bold">{stat.value}</p>
+                </div>
+                <stat.icon className={`h-6 w-6 ${
+                  index === 0 ? 'text-primary' :
+                  index === 1 ? 'text-accent' :
+                  index === 2 ? 'text-success' : 'text-warning'
+                }`} />
               </div>
-              {role === 'optometrist' && <Eye className="h-6 w-6 text-primary" />}
-              {role === 'admin' && <Users className="h-6 w-6 text-primary" />}
-              {role === 'technician' && <Stethoscope className="h-6 w-6 text-primary" />}
-              {role === 'receptionist' && <Calendar className="h-6 w-6 text-primary" />}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="shadow-card">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  {role === 'optometrist' ? 'Pending Results' : 
-                   role === 'admin' ? 'Revenue Today' :
-                   role === 'technician' ? 'Tests Complete' : 'Appointments'}
-                </p>
-                <p className="text-xl font-bold">
-                  {role === 'optometrist' ? '3' : 
-                   role === 'admin' ? '$2.4k' :
-                   role === 'technician' ? '16' : '18'}
-                </p>
-              </div>
-              <Activity className="h-6 w-6 text-accent" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  {role === 'optometrist' ? 'Next Appointment' : 
-                   role === 'admin' ? 'Active Users' :
-                   role === 'technician' ? 'Calibrations Due' : 'Insurance Pending'}
-                </p>
-                <p className="text-xl font-bold">
-                  {role === 'optometrist' ? '10:00 AM' : 
-                   role === 'admin' ? '8/12' :
-                   role === 'technician' ? '2' : '5'}
-                </p>
-              </div>
-              <Clock className="h-6 w-6 text-success" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  {role === 'optometrist' ? 'Prescriptions' : 
-                   role === 'admin' ? 'Efficiency Score' :
-                   role === 'technician' ? 'Inventory Low' : 'No-shows'}
-                </p>
-                <p className="text-xl font-bold">
-                  {role === 'optometrist' ? '4' : 
-                   role === 'admin' ? '92%' :
-                   role === 'technician' ? '3 items' : '1'}
-                </p>
-              </div>
-              <FileText className="h-6 w-6 text-warning" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
